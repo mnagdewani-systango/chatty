@@ -25,11 +25,12 @@ export async function persistOneToOneMsg (app, data) {
             peer_conversation_id: conversation.id
         }, { transaction: transaction })
 
+        // Not Needed in IVY Chat
         // Storing messages reference in Pending Table
-        let pendingMsg = await db.Pending.create({
-            recipient: data.recipient.toLowerCase(),
-            message_id: msg.dataValues.id
-        }, { transaction: transaction })
+        // let pendingMsg = await db.Pending.create({
+        //     recipient: data.recipient.toLowerCase(),
+        //     message_id: msg.dataValues.id
+        // }, { transaction: transaction })
 
         // Commiting the transaction
         await transaction.commit()
@@ -163,11 +164,13 @@ export async function getChatHistory(app, data, currentUser) {
          let historyMessages
 
          if(peerConversation.length){
+            let messages = await formatInboxResult(peerConversation)
             historyMessages = {
-                state: (!peerConversation[0].blocked)? 'active' : 'blocked',
-                blockedBy: (user1 == peerConversation[0].blocked)? user2 : user1,
+                state: (peerConversation[0].user1_conversation_blocked || peerConversation[0].user2_conversation_blocked)? 'blocked' : 'active',
+                user1_conversation_blocked: peerConversation[0].user1_conversation_blocked,
+                user2_conversation_blocked: peerConversation[0].user2_conversation_blocked,
                 currentPage: page,
-                messages: peerConversation.reverse()
+                messages: messages.reverse()
              }
          }
          
@@ -330,7 +333,8 @@ export async function getinboxMessages (app, user) {
                 include: [[db.Sequelize.col('Messages.data'), 'data'],
                  [db.Sequelize.col('Messages.sender'), 'sender'],
                  [db.Sequelize.col('Messages.created_at'), 'created_at']
-               ] 
+               ],
+               exclude: [[db.Sequelize.col('Messages.sender')]]
             },
             order: [[db.Sequelize.col('Messages.created_at')]],
             // WIP
@@ -351,7 +355,9 @@ export async function getinboxMessages (app, user) {
 
         let result = await getFirstMsg(user, peerConversation, pendingMessage)
 
-        return result
+        let formatResult = await formatInboxResult(result)
+
+        return formatResult
 
     } catch(err){
         console.log('err', err)
@@ -384,13 +390,23 @@ export async function blockUser (app, user, data) {
         user = user.toLowerCase()
         data.user = data.user.toLowerCase()
 
-         // Arranging users lexicographically
-         let user1 = (user < data.user) ? user : data.user,
-         user2 = (user > data.user) ? user : data.user
+        // Arranging users lexicographically
+        let user1 = (user < data.user) ? user : data.user,
+        user2 = (user > data.user) ? user : data.user
 
-        let peerConversation =  await db.Peer_conversation.update({
-                blocked: data.user
-            },{
+        let updateFields = {}
+
+        if(user === user1){
+            updateFields = {
+                user1_conversation_blocked: true
+            }
+        } else {
+            updateFields = {
+                user2_conversation_blocked: true
+            }
+        }
+
+        let peerConversation =  await db.Peer_conversation.update(updateFields,{
                 where: {
                     user1: user1,
                     user2: user2,
@@ -417,29 +433,24 @@ export async function unblockUser (app, user, data) {
         let user1 = (user < data.user) ? user : data.user,
          user2 = (user > data.user) ? user : data.user
 
-        let unblockAllowed =  await db.Peer_conversation.findAll({
+        let updateFields = {}
+
+        if(user === user1){
+            updateFields = {
+                user1_conversation_blocked: false
+            }
+        } else {
+            updateFields = {
+                user2_conversation_blocked: false
+            }
+        }
+
+        let peerConversation =  await db.Peer_conversation.update(updateFields,{
             where: {
                 user1: user1,
                 user2: user2,
-                application: app,
-                blocked: data.user
+                application: app
             }
-        })
-
-        // Not allowed
-        if(!unblockAllowed.length){
-            return false
-        }
-
-        let peerConversation =  await db.Peer_conversation.update({
-                blocked: ''
-            },{
-                where: {
-                    user1: user1,
-                    user2: user2,
-                    application: app,
-                    blocked: data.user
-                }
         })
 
         return true
@@ -524,6 +535,26 @@ async function getFirstMsg(user, data, pendingMessage) {
     return msgArray
 }
 
+async function formatInboxResult(result){
+    let formatedResult = []
+    result.map(element => formatedResult.push({
+        id: element.id,
+        clientGeneratedId: element['Messages.clientGeneratedId'],
+        created_at: element['Messages.created_at'],
+        updated_at: element['Messages.updated_at'],
+        data: element['Messages.data'],
+        sender: element.sender,
+        type: element['Messages.type'],
+        url: element['Messages.url'],
+        user1: element.user1,
+        user2: element.user2,
+        user1_conversation_blocked: element.user1_conversation_blocked,
+        user2_conversation_blocked: element.user2_conversation_blocked
+    }))
+
+    return formatedResult
+}
+
 // Get conversation ID
 async function getConversation (app, sender, recipient) {
     try{
@@ -544,7 +575,9 @@ async function getConversation (app, sender, recipient) {
                 encryption_key: Math.random().toString(36).replace('0.', ''),
                 user1: user1,
                 user2: user2,
-                application: app
+                application: app,
+                user1_conversation_blocked: false,
+                user2_conversation_blocked: false,
             }
         })
         

@@ -21,8 +21,13 @@ module.exports = function(sequelize, DataTypes) {
         application: {
             type: Sequelize.STRING
         },
-        blocked: {
-            type: Sequelize.STRING
+        user1_conversation_blocked: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: false
+        },
+        user2_conversation_blocked: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: false
         },
     }, {
         indexes: [

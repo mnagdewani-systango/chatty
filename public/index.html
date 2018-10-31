@@ -69,9 +69,7 @@
     <script>
       $(function () {
 				// Enter IP/Dns on the server
-				// var socket = io('http://baseball.draft2teams.sockets.staging.strat-o-matic.com/users', { transports: ['websocket'] });
-				// var parentServerSocket = io('http://baseball.draft2teams.sockets.staging.strat-o-matic.com/socket.io/userss?transport=websocket&token=xyz');
-				var socket = io('http://baseball.draft2teams.sockets.staging.strat-o-matic.com/users?application=demo', { transports: ['websocket'] });
+				var socket = io('http://127.0.0.1:3000/users?application=demo', { transports: ['websocket'] });
 				// var socket = io('http://127.0.0.1:3000/users', { transports: ['websocket'] });
 				let username;
       			let userLogedIn = false;
@@ -315,7 +313,7 @@
 					let data = {
 						peer: this.id,
 						noOfRecordsPerPage: 10,
-						page: 2
+						page: 1
 					}
 
 					let updatePendingStatus = {
