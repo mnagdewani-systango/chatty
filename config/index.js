@@ -14,7 +14,8 @@ var init = function () {
       },
       sessionSecret: process.env.SESSION_SECRET,
       echoSentMessage: process.env.ECHO_SENT_MESSAGE,
-      noOfRecordsPerPage: process.env.NO_OF_RECORDS_PER_PAGE
+      noOfRecordsPerPage: process.env.NO_OF_RECORDS_PER_PAGE,
+      enableDemoClinet: process.env.ENABLE_DEMO_CLIENT
     }
   } else {
     return require('./config.json')

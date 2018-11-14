@@ -350,10 +350,7 @@ export async function getinboxMessages (app, user) {
             peerConversation.map( conversation => conversationIds.add(conversation.id))
         }
 
-
-        let pendingMessage = await getPendingMessageCount (app, user, [... conversationIds])
-
-        let result = await getFirstMsg(user, peerConversation, pendingMessage)
+        let result = await getFirstMsg(user, peerConversation)
 
         let formatResult = await formatInboxResult(result)
 
@@ -510,7 +507,7 @@ export async function createGroup(app, user, data){
 }
 
 // get only latest message
-async function getFirstMsg(user, data, pendingMessage) {
+async function getFirstMsg(user, data) {
     let msgArray = []
     let latestMsg = new Map();
     let msg
@@ -524,12 +521,12 @@ async function getFirstMsg(user, data, pendingMessage) {
     }
 
     // Add Pending count
-    let tempMsg
-    for( let element in pendingMessage){
-        tempMsg =  latestMsg.get(pendingMessage[element].peer_conversation_id)
-        tempMsg.pendingCount = pendingMessage[element].pendingCount
-        latestMsg.set(tempMsg.id, tempMsg)
-    }
+    // let tempMsg
+    // for( let element in pendingMessage){
+    //     tempMsg =  latestMsg.get(pendingMessage[element].peer_conversation_id)
+    //     tempMsg.pendingCount = pendingMessage[element].pendingCount
+    //     latestMsg.set(tempMsg.id, tempMsg)
+    // }
 
     msgArray = Array.from(latestMsg.values());
     return msgArray

@@ -21,6 +21,7 @@ services:
       - DB_DIALECT=${CHAT_DB_DIALECT}
       - ECHO_SENT_MESSAGE=${ECHO_SENT_MESSAGE}
       - NO_OF_RECORDS_PER_PAGE=${NO_OF_RECORDS_PER_PAGE}
+      - ENABLE_DEMO_CLIENT=${ENABLE_DEMO_CLIENT}
       - SERVER_NAME='ChatServer_server1'
     command: forever server.js
     depends_on:
@@ -46,6 +47,7 @@ services:
       - DB_DIALECT=${CHAT_DB_DIALECT}
       - ECHO_SENT_MESSAGE=${ECHO_SENT_MESSAGE}
       - NO_OF_RECORDS_PER_PAGE=${NO_OF_RECORDS_PER_PAGE}
+      - ENABLE_DEMO_CLIENT=${ENABLE_DEMO_CLIENT}
       - SERVER_NAME='ChatServer_server2'
     command: forever server.js
     depends_on:

@@ -8,5 +8,6 @@
 	},
 	"echoSentMessage" : true,
 	"noOfRecordsPerPage": 100,
-	"sessionSecret": "<RandomString>"
+	"sessionSecret": "<RandomString>",
+	"enableDemoClinet": false
 }
