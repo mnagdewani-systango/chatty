@@ -10,13 +10,15 @@ var config = require('./config')
 // Demo clinet
 if(config.enableDemoClinet){
 
-    var public = path.join(__dirname, 'public');
-    
+    var public = path.join(__dirname, 'public')
+
     app.get('/', function(req, res) {
-        res.sendFile(path.join(public, 'index.html'));
+        res.sendFile(path.join(public, 'index.html'))
     });
 
-    app.use('/', express.static(public));
+    app.use('/', express.static(public))
+} else {
+    app.get('/', (req, res) =>res.sendStatus(200))
 }
 
 
