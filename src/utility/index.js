@@ -549,6 +549,14 @@ async function formatInboxResult(result){
         user2_conversation_blocked: element.user2_conversation_blocked
     }))
 
+    formatedResult.sort(function(a, b){
+        if(a['created_at']  > b['created_at']){
+            return -1
+        } else {
+            return 1
+        }
+    })
+
     return formatedResult
 }
 
